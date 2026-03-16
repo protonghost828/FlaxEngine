@@ -1,5 +1,4 @@
 name: Build Flax Engine Editor (Windows)
-
 on:
   push:
     branches: [ "main", "master" ]
@@ -14,15 +13,16 @@ jobs:
   build-editor:
     name: Windows Editor Build
     runs-on: windows-2022
-
     steps:
-
       # ——————————————————————————————————————
-      # Checkout with Git LFS
-      - name: Checkout repository
+      # Checkout official Flax Engine source
+      - name: Checkout Official Flax Engine
         uses: actions/checkout@v3
         with:
+          repository: FlaxEngine/FlaxEngine
+          ref: master
           lfs: true
+          submodules: recursive
 
       # ——————————————————————————————————————
       # Install .NET + Vulkan dependencies
