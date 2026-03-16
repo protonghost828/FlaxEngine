@@ -1,66 +1,48 @@
-name: Build Windows
+name: Build Windows Game
 
 on: [push, pull_request]
 
 env:
-  DOTNET_NOLOGO: true
-  DOTNET_CLI_TELEMETRY_OPTOUT: false
+DOTNET_NOLOGO: true
+DOTNET_CLI_TELEMETRY_OPTOUT: false
 
 jobs:
+build-game:
+name: Build and Package Game (Windows x64)
+runs-on: windows-2022
 
-  # Editor
-  editor-windows:
-    name: Editor (Windows, Development x64)
-    runs-on: windows-2022
+```
+steps:
+- name: Checkout repository
+  uses: actions/checkout@v4
+  with:
+    lfs: true
 
-    steps:
-    - name: Checkout repo
-      uses: actions/checkout@v4
-      with:
-        lfs: true
+- name: Setup Vulkan
+  uses: ./.github/actions/vulkan
 
-    - name: Setup Vulkan
-      uses: ./.github/actions/vulkan
+- name: Setup .NET
+  uses: actions/setup-dotnet@v4
+  with:
+    dotnet-version: 8.0.x
 
-    - name: Setup .NET
-      uses: actions/setup-dotnet@v4
-      with:
-        dotnet-version: 8.0.x
+- name: Print .NET info
+  run: |
+    dotnet --info
+    dotnet workload --info
 
-    - name: Print .NET info
-      run: |
-        dotnet --info
-        dotnet workload --info
+- name: Build Game
+  run: |
+    .\Development\Scripts\Windows\CallBuildTool.bat -build -log -arch=x64 -platform=Windows -configuration=Release -buildtargets=FlaxGame
 
-    - name: Build Editor
-      run: |
-        .\Development\Scripts\Windows\CallBuildTool.bat -build -log -printSDKs -dotnet=8 -arch=x64 -platform=Windows -configuration=Development -buildtargets=FlaxEditor
+- name: Package Game
+  run: |
+    .\Development\Scripts\Windows\CallBuildTool.bat -package -arch=x64 -platform=Windows -configuration=Release
 
-
-  # Game
-  game-windows:
-    name: Game (Windows, Release x64)
-    runs-on: windows-2022
-
-    steps:
-    - name: Checkout repo
-      uses: actions/checkout@v4
-      with:
-        lfs: true
-
-    - name: Setup Vulkan
-      uses: ./.github/actions/vulkan
-
-    - name: Setup .NET
-      uses: actions/setup-dotnet@v4
-      with:
-        dotnet-version: 8.0.x
-
-    - name: Print .NET info
-      run: |
-        dotnet --info
-        dotnet workload --info
-
-    - name: Build Game
-      run: |
-        .\Development\Scripts\Windows\CallBuildTool.bat -build -log -printSDKs -dotnet=8 -arch=x64 -platform=Windows -configuration=Release -buildtargets=FlaxGame
+- name: Upload packaged game
+  uses: actions/upload-artifact@v4
+  with:
+    name: windows-game-build
+    path: |
+      Package/
+```
