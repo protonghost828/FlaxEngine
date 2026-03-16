@@ -1,6 +1,8 @@
 name: Build Flax Editor (Windows)
 
-on: [push, pull_request]
+on:
+push:
+pull_request:
 
 env:
 DOTNET_NOLOGO: true
@@ -26,16 +28,24 @@ steps:
   with:
     dotnet-version: 8.0.x
 
-- name: Print .NET info
+- name: Print .NET information
   run: |
     dotnet --info
     dotnet workload --info
 
 - name: Build Flax Editor
   run: |
-    .\Development\Scripts\Windows\CallBuildTool.bat -build -log -printSDKs -dotnet=8 -arch=x64 -platform=Windows -configuration=Development -buildtargets=FlaxEditor
+    .\Development\Scripts\Windows\CallBuildTool.bat ^
+    -build ^
+    -log ^
+    -printSDKs ^
+    -dotnet=8 ^
+    -arch=x64 ^
+    -platform=Windows ^
+    -configuration=Development ^
+    -buildtargets=FlaxEditor
 
-- name: Upload Editor Build
+- name: Upload Editor Files
   uses: actions/upload-artifact@v4
   with:
     name: flax-editor-windows
