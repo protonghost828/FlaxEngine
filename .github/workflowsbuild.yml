@@ -1,0 +1,39 @@
+name: Flax Engine Windows build
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - master
+
+jobs:
+  build-windows-editor:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          lfs: true
+
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Generate project files
+        run: .\\GenerateProjectFiles.bat
+
+      - name: Build Flax editor
+        run: |
+          msbuild .\\Flax.sln /m /p:Configuration=Editor.Development /p:Platform=Win64 /p:BuildInParallel=true
+
+      - name: Find FlaxEditor.exe
+        run: |
+          where /R . FlaxEditor.exe
+
+      - name: Upload build artifact (FlaxEditor.exe)
+        uses: actions/upload-artifact@v4
+        with:
+          name: flax-editor-win64
+          path: Binaries\\Editor\\Win64\\Editor.Development\\FlaxEditor.exe
