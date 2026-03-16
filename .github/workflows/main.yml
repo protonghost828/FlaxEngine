@@ -17,7 +17,7 @@ jobs:
       # ——————————————————————————————————————
       # Checkout official Flax Engine source
       - name: Checkout Official Flax Engine
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           repository: FlaxEngine/FlaxEngine
           ref: master
@@ -27,7 +27,7 @@ jobs:
       # ——————————————————————————————————————
       # Install .NET + Vulkan dependencies
       - name: Setup .NET
-        uses: actions/setup-dotnet@v3
+        uses: actions/setup-dotnet@v4
         with:
           dotnet-version: 8.0.x
 
@@ -59,7 +59,7 @@ jobs:
       # ——————————————————————————————————————
       # Upload ZIP artifact
       - name: Upload Editor Artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: FlaxEditor-Windows-Full
           path: .\FlaxEditor-Full.zip
