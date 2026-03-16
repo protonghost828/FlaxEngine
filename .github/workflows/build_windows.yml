@@ -1,48 +1,49 @@
-name: Build Windows Game
-
+name: Build Windows
 on: [push, pull_request]
 
 env:
-DOTNET_NOLOGO: true
-DOTNET_CLI_TELEMETRY_OPTOUT: false
+  DOTNET_NOLOGO: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: true   # disable telemetry in CI
 
 jobs:
-build-game:
-name: Build and Package Game (Windows x64)
-runs-on: windows-2022
+  build-windows:
+    name: Build Windows (Editor & Game)
+    runs-on: windows-2022
+    strategy:
+      matrix:
+        target:
+          - name: Editor
+            config: Development
+            buildtargets: FlaxEditor
+          - name: Game
+            config: Release
+            buildtargets: FlaxGame
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+        with:
+          lfs: true   # automatically pulls LFS files
 
-```
-steps:
-- name: Checkout repository
-  uses: actions/checkout@v4
-  with:
-    lfs: true
+      - name: Setup Vulkan
+        uses: ./.github/actions/vulkan
 
-- name: Setup Vulkan
-  uses: ./.github/actions/vulkan
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: 8.0.x
 
-- name: Setup .NET
-  uses: actions/setup-dotnet@v4
-  with:
-    dotnet-version: 8.0.x
+      - name: Print .NET info
+        run: |
+          dotnet --info
+          dotnet workload --info
 
-- name: Print .NET info
-  run: |
-    dotnet --info
-    dotnet workload --info
+      - name: Build
+        run: |
+          .\Development\Scripts\Windows\CallBuildTool.bat -build -log -printSDKs -dotnet=8 -arch=x64 -platform=Windows -configuration=${{ matrix.target.config }} -buildtargets=${{ matrix.target.buildtargets }}
 
-- name: Build Game
-  run: |
-    .\Development\Scripts\Windows\CallBuildTool.bat -build -log -arch=x64 -platform=Windows -configuration=Release -buildtargets=FlaxGame
-
-- name: Package Game
-  run: |
-    .\Development\Scripts\Windows\CallBuildTool.bat -package -arch=x64 -platform=Windows -configuration=Release
-
-- name: Upload packaged game
-  uses: actions/upload-artifact@v4
-  with:
-    name: windows-game-build
-    path: |
-      Package/
-```
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{ matrix.target.name }}-Windows
+          path: |
+            .\Build\Windows\x64\${{ matrix.target.buildtargets }}\*   # adjust if your output path differs
