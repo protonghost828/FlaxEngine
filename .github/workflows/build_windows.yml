@@ -1,28 +1,19 @@
-name: Build Windows
+name: Build & Package Flax Editor
 on: [push, pull_request]
 
 env:
   DOTNET_NOLOGO: true
-  DOTNET_CLI_TELEMETRY_OPTOUT: true   # disable telemetry in CI
+  DOTNET_CLI_TELEMETRY_OPTOUT: true
 
 jobs:
-  build-windows:
-    name: Build Windows (Editor & Game)
+  build-editor:
+    name: Build Flax Editor (Windows)
     runs-on: windows-2022
-    strategy:
-      matrix:
-        target:
-          - name: Editor
-            config: Development
-            buildtargets: FlaxEditor
-          - name: Game
-            config: Release
-            buildtargets: FlaxGame
     steps:
-      - name: Checkout repo
+      - name: Checkout repository with LFS
         uses: actions/checkout@v3
         with:
-          lfs: true   # automatically pulls LFS files
+          lfs: true
 
       - name: Setup Vulkan
         uses: ./.github/actions/vulkan
@@ -37,13 +28,16 @@ jobs:
           dotnet --info
           dotnet workload --info
 
-      - name: Build
+      - name: Build Editor
         run: |
-          .\Development\Scripts\Windows\CallBuildTool.bat -build -log -printSDKs -dotnet=8 -arch=x64 -platform=Windows -configuration=${{ matrix.target.config }} -buildtargets=${{ matrix.target.buildtargets }}
+          .\Development\Scripts\Windows\CallBuildTool.bat -build -log -printSDKs -dotnet=8 -arch=x64 -platform=Windows -configuration=Development -buildtargets=FlaxEditor
 
-      - name: Upload build artifact
+      - name: Archive full Editor build
+        run: |
+          powershell Compress-Archive -Path ".\Build\Windows\x64\FlaxEditor\*" -DestinationPath ".\FlaxEditor-Full.zip" -Force
+
+      - name: Upload Editor artifact
         uses: actions/upload-artifact@v3
         with:
-          name: ${{ matrix.target.name }}-Windows
-          path: |
-            .\Build\Windows\x64\${{ matrix.target.buildtargets }}\*   # adjust if your output path differs
+          name: FlaxEditor-Full
+          path: .\FlaxEditor-Full.zip
