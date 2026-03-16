@@ -1,4 +1,4 @@
-name: Build Windows Game
+name: Build Flax Editor (Windows)
 
 on: [push, pull_request]
 
@@ -7,8 +7,8 @@ DOTNET_NOLOGO: true
 DOTNET_CLI_TELEMETRY_OPTOUT: false
 
 jobs:
-build-windows:
-name: Build & Package (Windows x64)
+build-editor:
+name: Build Flax Editor (Windows x64)
 runs-on: windows-2022
 
 ```
@@ -31,17 +31,17 @@ steps:
     dotnet --info
     dotnet workload --info
 
-- name: Build game
+- name: Build Flax Editor
   run: |
-    .\Development\Scripts\Windows\CallBuildTool.bat -build -log -arch=x64 -platform=Windows -configuration=Release -buildtargets=FlaxGame
+    .\Development\Scripts\Windows\CallBuildTool.bat -build -log -printSDKs -dotnet=8 -arch=x64 -platform=Windows -configuration=Development -buildtargets=FlaxEditor
 
-- name: Package game
-  run: |
-    .\Development\Scripts\Windows\CallBuildTool.bat -package -arch=x64 -platform=Windows -configuration=Release
-
-- name: Upload packaged build
+- name: Upload Editor Build
   uses: actions/upload-artifact@v4
   with:
-    name: windows-game-build
-    path: Package/
+    name: flax-editor-windows
+    path: |
+      Binaries/
+      Cache/
+      Content/
+      Engine/
 ```
