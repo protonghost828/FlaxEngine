@@ -1,57 +1,46 @@
 name: Build Flax Editor (Windows)
 
 on:
-push:
-pull_request:
+  push:
+  pull_request:
 
 env:
-DOTNET_NOLOGO: true
-DOTNET_CLI_TELEMETRY_OPTOUT: false
+  DOTNET_NOLOGO: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: false
 
 jobs:
-build-editor:
-name: Build Flax Editor (Windows x64)
-runs-on: windows-2022
+  build-editor:
+    name: Build Flax Editor (Windows x64)
+    runs-on: windows-2022
 
-```
-steps:
-- name: Checkout repository
-  uses: actions/checkout@v4
-  with:
-    lfs: true
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          lfs: true
 
-- name: Setup Vulkan
-  uses: ./.github/actions/vulkan
+      - name: Setup Vulkan
+        uses: ./.github/actions/vulkan
 
-- name: Setup .NET
-  uses: actions/setup-dotnet@v4
-  with:
-    dotnet-version: 8.0.x
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
 
-- name: Print .NET information
-  run: |
-    dotnet --info
-    dotnet workload --info
+      - name: Print .NET information
+        run: |
+          dotnet --info
+          dotnet workload --info
 
-- name: Build Flax Editor
-  run: |
-    .\Development\Scripts\Windows\CallBuildTool.bat ^
-    -build ^
-    -log ^
-    -printSDKs ^
-    -dotnet=8 ^
-    -arch=x64 ^
-    -platform=Windows ^
-    -configuration=Development ^
-    -buildtargets=FlaxEditor
+      - name: Build Flax Editor
+        run: .\Development\Scripts\Windows\CallBuildTool.bat -build -log -printSDKs -dotnet=8 -arch=x64 -platform=Windows -configuration=Development -buildtargets=FlaxEditor
 
-- name: Upload Editor Files
-  uses: actions/upload-artifact@v4
-  with:
-    name: flax-editor-windows
-    path: |
-      Binaries/
-      Cache/
-      Content/
-      Engine/
-```
+      - name: Upload Editor Files
+        uses: actions/upload-artifact@v4
+        with:
+          name: flax-editor-windows
+          path: |
+            Binaries/
+            Cache/
+            Content/
+            Engine/
